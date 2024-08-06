@@ -322,9 +322,15 @@ pub async fn push_profile(data: PushProfileData<'_>) -> Result<(), PushProfileEr
             None => &data.deploy_data.node.node_settings.hostname,
         };
 
+        let ssh_addr = if data.deploy_defs.ssh_user.is_empty() {
+            format!("ssh://{}", hostname)
+        } else {
+            format!("ssh://{}@{}", data.deploy_defs.ssh_user, hostname)
+        };
+
         let copy_exit_status = copy_command
             .arg("--to")
-            .arg(format!("ssh://{}@{}", data.deploy_defs.ssh_user, hostname))
+            .arg(ssh_addr)
             .arg(&data.deploy_data.profile.profile_settings.path)
             .env("NIX_SSHOPTS", ssh_opts_str)
             .status()
